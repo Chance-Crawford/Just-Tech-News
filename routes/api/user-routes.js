@@ -76,6 +76,8 @@ router.post('/', (req, res) => {
     User.create({
         username: req.body.username,
         email: req.body.email,
+        // this password gets hashed for security before getting
+        // saved in the database. see User.js
         password: req.body.password
     })
     // sends back response from database as json to front end
@@ -87,6 +89,84 @@ router.post('/', (req, res) => {
       res.status(500).json(err);
     });
 });
+
+
+// see google docs, ORM - Notes, 
+// User authentication log in route after password was hashed.
+// Creating a log in route for the user that authenticates
+// them even after their password was hashed and stored in the database.
+// In this case, a login route could've used the GET method since it 
+// doesn't actually create or insert anything into the database. 
+// But there is a reason why a POST is the standard for the login 
+// that's in process.
+// A GET method carries the request parameter appended in the URL 
+// string, whereas a POST method carries the request parameter in 
+// req.body, which makes it a more secure way of transferring data 
+// from the client to the server. Remember, the password is still 
+// in plaintext, which makes this transmission process a vulnerable 
+// link in the chain.
+router.post('/login', (req, res) => {
+
+    // expects {email: 'lernantino@gmail.com', password: 'password1234'}
+    // In the database, find a user in the user table.
+    User.findOne({
+        // where the email sent in the req.body matches with an
+        // email of the user in the database, 
+        // (since email is unique and there can only be one user with it)
+        where: {
+            email: req.body.email
+        }
+    })
+    // then return that users data so we can verify the password
+    .then(dbUserData => {
+        // user not found? send error message back to front end (client).
+        if (!dbUserData) {
+        res.status(400).json({ message: 'No user with that email address!' });
+        return;
+        }
+        // if user exists and we found them successfully,
+        // send the user data back to the front end
+        // res.json({ user: dbUserData });
+
+        // Then verify the user's password
+        // by matching the password from the user and the 
+        // hashed password in the database. This will be done using
+        // the User instance method defined in User.js 
+        // (which that method utilizes bcrypt 
+        // sync function to check the plain password against
+        // the hashed version)
+        // If the query result is successful (i.e., not empty), we can 
+        // call .checkPassword(), which will be on the dbUserData User object.
+        // The .compareSync() method, which is inside the .checkPassword() 
+        // method, can then confirm or deny that the supplied password matches 
+        // the hashed password stored on the object. .checkPassword() will 
+        // then return true on success or false on failure. We'll store that 
+        // boolean value to the variable validPassword.
+        // Note that the instance method was called on the user 
+        // retrieved from the database, dbUserData
+        const validPassword = dbUserData.checkPassword(req.body.password);
+
+        // Because the instance method returns a Boolean, we can use it 
+        // in a conditional statement to verify whether the user has been 
+        // verified or not.
+        // if the match returns a false value, an error message is sent back 
+        // to the client, and the return statement exits out of the 
+        // function immediately.
+        if (!validPassword) {
+            res.status(400).json({ message: 'Incorrect password!' });
+            return;
+        }
+          
+        // However, if there is a match, the conditional statement block 
+        // is ignored, and a response with the data and the message 
+        // "You are now logged in." is sent instead.
+        res.json({ user: dbUserData, message: 'You are now logged in!' });
+
+    });
+  
+})
+
+
 
 // PUT /api/users/1
 router.put('/:id', (req, res) => {
@@ -102,9 +182,16 @@ router.put('/:id', (req, res) => {
     // UPDATE users
     // SET username = "Lernantino", email = "lernantino@gmail.com", password = "newPassword1234"
     // WHERE id = 1;
-    // req.body would be an object matching the properties to create a user, we are then using
+    // req.body would be an object matching the properties to create a user, 
+    // the req.body can be a object changing all properties of the user
+    // or just one. such as { password: "pass" }, we are then using
     // the properties to update a user at the specific id.
     User.update(req.body, {
+        // see User.js User.init hooks
+        // if password is updated to a new password, the
+        // password will be hashed before being stored safely in the 
+        // database.
+        individualHooks: true,
         where: {
             id: req.params.id
         }
