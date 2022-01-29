@@ -6,6 +6,9 @@ const routes = require('./routes');
 const sequelize = require('./config/connection');
 
 const app = express();
+
+// This uses Heroku's process.env.PORT 
+// value for the port when deployed and 3001 when run locally.
 const PORT = process.env.PORT || 3001;
 
 // express middleware
