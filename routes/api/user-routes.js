@@ -1,7 +1,7 @@
 // see google docs, ORM - Notes, API routes for the user model
 // We're using an Express.js router again to help us keep the routes organized.
 const router = require('express').Router();
-const { User } = require('../../models');
+const { User, Post, Vote, Comment } = require('../../models');
 
 // GET /api/users
 router.get('/', (req, res) => {
@@ -43,9 +43,46 @@ router.get('/:id', (req, res) => {
         // gets the user by id
         where: {
           id: req.params.id
-        }
+        },
+        // include not just the posts they created but also the votes
+        // that this user has put on ither posts.
+        include: [
+            {
+              model: Post,
+              attributes: ['id', 'title', 'post_url', 'created_at']
+            },
+            // returns comments associated with the user
+            // (comments the user has created)
+            {
+                model: Comment,
+                attributes: ['id', 'comment_text', 'created_at'],
+                // in the comments the user has made, also include
+                // the titles of the post that the user commented on
+                // for each comment.
+                include: {
+                    model: Post,
+                    attributes: ['title']
+                }
+            },
+            // So now when we query a single user, we'll receive the 
+            // title information of every post they've ever voted on. 
+            // This would be handy for building a front end with a user 
+            // profile page, as it'll allow us to provide more information 
+            // for that user. Notice how we had to make this happen, though. 
+            // We had to include the Post model, as we did before; but this 
+            // time we had to contextualize it by going through the Vote table.
+            {
+              model: Post,
+              attributes: ['title'],
+              through: Vote,
+              as: 'voted_posts'
+            }
+        ]
     })
     // On the data returned from the database on that one user as an object
+    // Now when we query a user, we can see which posts a user has created 
+    // and which posts a user has voted on, which will come under the 
+    // property name voted_posts, so that we know which set of data is which.
     .then(dbUserData => {
         // if user doesnt exist or has been deleted
         if (!dbUserData) {

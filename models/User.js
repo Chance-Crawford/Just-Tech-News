@@ -158,6 +158,7 @@ User.init(
     freezeTableName: true,
     // use underscores instead of camel-casing 
     // (i.e. `comment_text` and not `commentText`)
+    // In Sequelize, columns are camelcase by default.
     underscored: true,
     // make it so our model name stays lowercase in the database
     modelName: 'user'

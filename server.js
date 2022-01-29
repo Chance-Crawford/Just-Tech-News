@@ -27,8 +27,19 @@ app.use(routes);
 // were set to true, it would drop and re-create all of the database tables on 
 // startup. This is great for when we make changes to the Sequelize models, 
 // as the database would need a way to understand that something has changed. 
+// such as we establish an association between one or more tables.
 // We'll have to do that a few times throughout this project, so it's best to 
-// keep the {force: false} there for now.
+// keep the {force: false} there for now, and we will change it to true to 
+// refresh the tables when needed.
+// This definition performs similarly to DROP TABLE IF EXISTS, which was 
+// used previously. This allows the table to be overwritten and re-created.
+// Then we should change this value back to false. Dropping all the tables 
+// every time the application restarts is no longer necessary and in 
+// fact will constantly drop all the entries and seed data we enter, 
+// by using the post User api route.
+// which can get very annoying.
+// change value to true whenever a new association is made between tables,
+// so that the tables can refresh and the associations can be applied.
 // server will start with npm start.
 sequelize.sync({ force: false }).then(() => {
   app.listen(PORT, () => console.log('Now listening'));
