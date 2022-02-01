@@ -18,6 +18,11 @@ require('dotenv').config();
 // MySQL database hosted by heroku.
 // If there is not that environmental variable, then we will create the 
 // connection to our MySQL database locally, using the localhost configuration.
+// When heroku is connected, in order to fill the remote database, send the
+// api post requests we created to the name of the heroku deployed app.
+// ex. send json to
+// https://warm-gorge-32020.herokuapp.com/api/users
+// using insomia.
 let sequelize;
 
 if (process.env.JAWSDB_URL) {

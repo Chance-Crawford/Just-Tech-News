@@ -34,7 +34,7 @@ User.hasMany(Post, {
 // in the Post model.
 // Deeper explanation:
 // The belongsTo statement creates a one-to-one relationship any single
-// dog record can only be associated with one User record.
+// Post record can only be associated with one User record.
 // A User can have many posts, but a post can only have one user. This 
 // establishes the relationship between the two tables in the database, on 
 // both sides.
