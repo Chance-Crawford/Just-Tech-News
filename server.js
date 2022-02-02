@@ -2,8 +2,18 @@
 
 const express = require('express');
 // takes all routes packaged in the routes/index.js file
-const routes = require('./routes');
+const routes = require('./controllers');
 const sequelize = require('./config/connection');
+
+// sets up handlebars templating engine, along with app functions
+// further below.
+// see google docs, handlebars.js
+const exphbs = require('express-handlebars');
+const hbs = exphbs.create({});
+
+// used to make static files in the public folder like style.css
+// available to the client no matter where the current directory is.
+const path = require('path');
 
 const app = express();
 
@@ -11,12 +21,58 @@ const app = express();
 // value for the port when deployed and 3001 when run locally.
 const PORT = process.env.PORT || 3001;
 
+// see google docs, Express-session and connect-session-sequelize
+// Creates a user session
+const session = require('express-session');
+
+// connects the session to MySQL database using sequelize
+// and allows the user session to be stored in the 
+// database.
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
+
+// This code sets up an Express.js session and connects the session to our Sequelize 
+// MySQL database. As you may be able to guess, "Super secret secret" should be replaced 
+// by an actual secret and stored in the .env file.
+// see google docs, Express-session and connect-session-sequelize
+const sess = {
+  secret: 'Super secret secret',
+  // All we need to do to tell our session to use cookies is to set cookie 
+  // to be {}. If we wanted to set additional options on the cookie, 
+  // like a maximum age, we would add the options to that object.
+  cookie: {},
+  // see google docs, Express-session and connect-session-sequelize
+  resave: false,
+  saveUninitialized: true,
+  // sets up session storage in the database compatible with sequelize 
+  // from the variable defined above.
+  store: new SequelizeStore({
+    // creates storage in database from the database connection
+    db: sequelize
+  })
+};
+
 // express middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// middleware to make the express server use the user session we created
+app.use(session(sess));
+
+// used to make all static files in the public folder like style.css, etc.
+// available to the client no matter where the current directory is.
+// express.static() method is a built-in Express.js middleware function that 
+// can take all of the contents of a folder and serve them as static assets. 
+// This is useful for front-end specific files like images, style sheets, 
+// and JavaScript files.
+app.use(express.static(path.join(__dirname, 'public')));
+
 // turn on routes
 app.use(routes);
+
+// sets up handlebars templating engine
+// see google docs, handlebars.js
+app.engine('handlebars', hbs.engine);
+app.set('view engine', 'handlebars');
 
 // turn on connection to MySQL db and express server
 // Also, note we're importing the connection to Sequelize 

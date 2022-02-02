@@ -120,7 +120,25 @@ router.post('/', (req, res) => {
     // sends back response from database as json to front end
     // if the developers want to access it to see the affectedRows or 
     // some other property
-    .then(dbUserData => res.json(dbUserData))
+    .then(dbUserData => {
+        // see google docs, Express-session and connect-session-sequelize
+        // Creates a user session which we defined in 
+        // server.js
+        // We want to make sure the session is created before we 
+        // send the response back, so we're wrapping the variables 
+        // in a callback. The req.session.save() method will 
+        // initiate the creation of the session and then run the 
+        // callback function once complete.
+        // This gives our server easy access to the user's user_id, username, 
+        // and a Boolean describing whether or not the user is logged in.
+        req.session.save(() => {
+          req.session.user_id = dbUserData.id;
+          req.session.username = dbUserData.username;
+          req.session.loggedIn = true;
+      
+          res.json(dbUserData);
+        });
+    })
     .catch(err => {
       console.log(err);
       res.status(500).json(err);
@@ -193,16 +211,45 @@ router.post('/login', (req, res) => {
             res.status(400).json({ message: 'Incorrect password!' });
             return;
         }
-          
-        // However, if there is a match, the conditional statement block 
-        // is ignored, and a response with the data and the message 
-        // "You are now logged in." is sent instead.
-        res.json({ user: dbUserData, message: 'You are now logged in!' });
+        
+        // see google docs, Express-session and connect-session-sequelize
+        // creates a user session on the server and
+        // gives our server easy access to the user's user_id, 
+        // username, and a Boolean describing whether or not the user is logged in.
+        req.session.save(() => {
+            // declare session variables
+            req.session.user_id = dbUserData.id;
+            req.session.username = dbUserData.username;
+            req.session.loggedIn = true;
+      
+            // However, if there is a match, the conditional statement block 
+            // is ignored, and a response with the data and the message 
+            // "You are now logged in." is sent instead.
+            res.json({ user: dbUserData, message: 'You are now logged in!' });
+        });
 
     });
   
-})
+});
 
+
+// see google docs, Express-session and connect-session-sequelize
+// Now that we've given users the ability to log in, we should probably allow 
+// them to log out as well. This will entail destroying the session variables and 
+// resetting the cookie.
+router.post('/logout', (req, res) => {
+    if (req.session.loggedIn) {
+        // We can then use the destroy() method to clear the session
+        req.session.destroy(() => {
+          // we send back a 204 status code after the session has 
+          // successfully been destroyed.
+          res.status(204).end();
+        });
+    }
+    else {
+        res.status(404).end();
+    }
+});
 
 
 // PUT /api/users/1
