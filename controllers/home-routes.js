@@ -93,7 +93,13 @@ router.get('/', (req, res) => {
         // {{#each}} expression and using that name for the subsequent placeholders.
         // ex. {{#each posts as |post|}}, then in every placeholder you would use post.<property>
         // dot notation.
-        res.render('homepage', { posts });
+        res.render('homepage', { 
+          posts,
+          // see GET /post/:id below.
+          // had to pass it to homepage too so that logout and login buttons
+          // will show conditionally for all pages.
+          loggedIn: req.session.loggedIn
+        });
 
       })
       .catch(err => {
@@ -101,6 +107,8 @@ router.get('/', (req, res) => {
         res.status(500).json(err);
       });
 });
+
+
 
 // login page html template route
 router.get('/login', (req, res) => {
@@ -117,5 +125,77 @@ router.get('/login', (req, res) => {
 
   res.render('login');
 });
+
+
+
+
+// get template for a single post page. 
+// Page that shows a single post
+// and gets data from the post object that was in the database, and puts it into the html 
+// template before it is rendered and returned from this api call.
+router.get('/post/:id', (req, res) => {
+  Post.findOne({
+    where: {
+      id: req.params.id
+    },
+    // attributes we want from the post object returned from the database
+    attributes: [
+      'id',
+      'post_url',
+      'title',
+      'created_at',
+      // vote_count property
+      [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
+    ],
+    include: [
+      // include all comments associated with this post and the users who made the comments
+      {
+        model: Comment,
+        attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
+        include: {
+          model: User,
+          attributes: ['username']
+        }
+      },
+      // include the user who made the post
+      {
+        model: User,
+        attributes: ['username']
+      }
+    ]
+  })
+    .then(dbPostData => {
+      if (!dbPostData) {
+        res.status(404).json({ message: 'No post found with this id' });
+        return;
+      }
+
+      // serialize the data to regular object-
+      const post = dbPostData.get({ plain: true });
+
+      // pass data to template
+      res.render('single-post', { 
+        // passing post data to single-post template
+        post,
+        // also passing if a user is logged in by passing the session boolean
+        // property loggedIn.
+        // this can be used to tell the template if it should display the add comment
+        // and upvote buttons or not. If user is not logged in, the template will not
+        // show the buttons.
+        // sends a loggedIn property with true or false as the value to be used in the
+        // template to decide what should be rendered
+        loggedIn: req.session.loggedIn
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+});
+
+
+
+
+
 
 module.exports = router;

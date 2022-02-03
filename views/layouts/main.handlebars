@@ -17,10 +17,21 @@
         <a href="/">Just Tech News</a>
       </h1>
       <nav>
+        {{!-- see single-post.handlebars to see comments about "if" helper --}}
+        {{!-- Wait—we made these changes in the main layout, but we're only passing 
+        loggedIn to the single-post.handlebars template. Fortunately, variables that 
+        are passed to view templates are automatically passed to the main layout. Thus, 
+        the single-post page is already good to go. We just need to update the homepage 
+        route to do the same. --}}
         {{!-- Since logout won’t be an actual page that users can visit, 
         it should be a button, but we can still style it to look like a link. --}}
+        {{#if loggedIn}}
         <button id="logout" class="btn-no-style">logout</button>
+        {{!-- if not logged in, show the login button, but also won't show
+        the logout button, since it is an "else" helper --}}
+        {{else}}
         <a href="/login">Login</a>
+        {{/if}}
       </nav>
     </header>
     <main>
@@ -31,7 +42,9 @@
     </footer>
   </div>
 
+{{#if loggedIn}}
 <script src="/javascript/logout.js"></script>
+{{/if}}
 </body>
 
 </html>

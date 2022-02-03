@@ -42,6 +42,9 @@ async function signupFormHandler(event) {
         // check the response status
         if (response.ok) {
             console.log('success');
+            // if user was created successfully, take them back to
+            // the homepage
+            document.location.replace('/');
         } else {
             // if not successful response sent back from database.
             // then alert an error.

@@ -20,17 +20,22 @@ router.get('/', (req, res) => {
 
 // endpoint to create a comment
 router.post('/', (req, res) => {
-    Comment.create({
+    // check if a user is logged in by checking if there is a session.
+    // see post-routes.js PUT /upvote for more comments.
+    if (req.session) {
+        // create a comment if there is a session.
+        Comment.create({
         comment_text: req.body.comment_text,
-        user_id: req.body.user_id,
-        post_id: req.body.post_id
-    })
-    // sends back the comment row/object that was created
-    .then(dbCommentData => res.json(dbCommentData))
-    .catch(err => {
-        console.log(err);
-        res.status(400).json(err);
-    });
+        post_id: req.body.post_id,
+        // use the id that is stored in the session.
+        user_id: req.session.user_id
+        })
+        .then(dbCommentData => res.json(dbCommentData))
+        .catch(err => {
+            console.log(err);
+            res.status(400).json(err);
+        });
+    }
 });
 
 

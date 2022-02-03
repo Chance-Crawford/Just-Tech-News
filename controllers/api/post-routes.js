@@ -166,48 +166,29 @@ router.post('/', (req, res) => {
 // Otherwise, Express.js will think the word "upvote" is a valid 
 // parameter for /:id.
 router.put('/upvote', (req, res) => {
-    // An upvote request will differ somewhat from the PUT requests 
-    // we've created before. It will involve two queries: first, using 
-    // the Vote model to create a vote, then querying on that post to 
-    // get an updated vote count.
-    Vote.create({
-        // to create a vote, we need to pass in
-        // the user who voted and the post_id.
-        user_id: req.body.user_id,
-        post_id: req.body.post_id
-    })
-    .then(() => {
-        // then find the post we are voting on
-        return Post.findOne({
-            where: {
-                id: req.body.post_id
-            },
-            attributes: [
-                'id',
-                'post_url',
-                'title',
-                'created_at',
-                // use raw MySQL aggregate function query to get a count of 
-                // how many votes the post has and return it under the name 
-                // `vote_count`
-                // Instead of trying to predict and build a method for every 
-                // possible use developers have for SQL databases, Sequelize 
-                // provides us with a special method called .literal() that 
-                // allows us to run regular SQL queries from within the Sequelize 
-                // method-based queries. So when we vote on a post, we'll see 
-                // that post—and its updated vote total—in the response.
-                [
-                    sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'),
-                    'vote_count'
-                ]
-            ]
-        });
-    })
-    .then(dbPostData => res.json(dbPostData))
-    .catch(err => {
+  // make sure the session exists first, this means user is logged in.
+  // see google docs, Express-session and connect-session-sequelize for more
+  // details
+  if (req.session) {
+    // upvote is a custom static method we made for the post model.
+    // when an upvote is made on the frontend, we only pass the post_id in the api
+    // call, not the user id. Here in the backend we will 
+    // pass user_id stored in session along with all destructured properties on req.body
+    // (which is just the post_id).
+    // We're doing two things here. First, we're checking that a session 
+    // exists before we even touch the database. Then if a session does exist, 
+    // we're using the saved user_id property on the session to insert a new 
+    // record in the vote table.
+    // This means that the upvote feature will only work if someone has logged in.
+    // The first time you click the upvote button, the page will refresh, and the 
+    // comment count will have gone up by one.
+    Post.upvote({ ...req.body, user_id: req.session.user_id }, { Vote, Comment, User })
+      .then(updatedVoteData => res.json(updatedVoteData))
+      .catch(err => {
         console.log(err);
-        res.status(400).json(err);
-    });
+        res.status(500).json(err);
+      });
+  }
 });
 
 

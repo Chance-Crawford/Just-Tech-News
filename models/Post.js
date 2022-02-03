@@ -10,7 +10,45 @@ const sequelize = require('../config/connection');
 
 // create our Post model
 // Also see User.js for more info and comments.
-class Post extends Model {}
+class Post extends Model {
+  // Here, we're using JavaScript's built-in static keyword to 
+  // indicate that the upvote method is one that's based on the Post 
+  // model and not an instance method like we used earlier with the User model.
+  // This means that the method can be called on the model itself.
+  // ex. Post.upvote().
+  // We've set it up so that we can now execute Post.upvote() as if it 
+  // were one of Sequelize's other built-in methods. With this upvote method, 
+  // we'll pass in the value of req.body (as body) and an object of the models 
+  // (as models) as parameters. Because this method will handle the complicated 
+  // voting query in the /api/posts/upvote route, let's implement that query's code here.
+  static upvote(body, models) {
+    // creates a new vote for the Vote model.
+    // We are having the vote model passed in as an argument so that 
+    // we do not have to require it here in the Post model definition.
+    // when this method is called, a new upvote will be made and the post
+    // instance that was voted on will be returned.
+    return models.Vote.create({
+      user_id: body.user_id,
+      post_id: body.post_id
+    }).then(() => {
+      return Post.findOne({
+        where: {
+          id: body.post_id
+        },
+        attributes: [
+          'id',
+          'post_url',
+          'title',
+          'created_at',
+          [
+            sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'),
+            'vote_count'
+          ]
+        ]
+      });
+    });
+  }
+}
 
 // createand define fields/columns for Post model
 // defining the Post schema
