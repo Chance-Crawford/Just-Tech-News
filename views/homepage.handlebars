@@ -1,20 +1,13 @@
 {{!-- for more info see google docs, handlebars.js --}}
 {{! see controllers/home-routes.js}}
 <ol class="post-list">
-  {{#each posts}}
+  {{!-- see home-routes.js GET / for "each" helper info  --}}
+  {{#each posts as |post|}}
   <li>
-    <article class="post">
-      <div class="title">
-        <a href="{{post_url}}" target="_blank">{{title}}</a>
-        <span>({{post_url}})</span>
-      </div>
-      <div class="meta">
-        {{vote_count}} point(s) by {{user.username}} on
-        {{created_at}}
-        |
-        <a href="/post/{{id}}">{{comments.length}} comment(s)</a>
-      </div>
-    </article>
+    {{!-- see google docs, handlebars.js, partial templates --}}
+    {{!-- imports the partial template code snippet from post-info.handlebars
+    and passes the post object to the partial template.  --}}
+    {{> post-info post }}
   </li>
   {{/each}}
 </ol>

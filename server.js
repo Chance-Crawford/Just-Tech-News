@@ -5,11 +5,25 @@ const express = require('express');
 const routes = require('./controllers');
 const sequelize = require('./config/connection');
 
+
+// see google docs, handlebars.js, Creating custom helper functions 
+// in handlebars for Date Formats, etc.
+// file meant for defining custom helper functions to use in handlebars templates.
+// 1. To implement the custom helper functions, we need to start telling 
+// Handlebars.js about the helpers file.
+const helpers = require('./utils/helpers');
+
+
 // sets up handlebars templating engine, along with app functions
 // further below.
 // see google docs, handlebars.js
 const exphbs = require('express-handlebars');
-const hbs = exphbs.create({});
+// 2. Then pass the helpers to the existing exphbs.create() statement
+// This function used to be the default handlebar create initialization, exphbs.create({}).
+// but we added our own custom helper functions into 
+// the handlebar template engine creation.
+// Now we can use the custom helper functions in handlebars templates!
+const hbs = exphbs.create({ helpers });
 
 // used to make static files in the public folder like style.css
 // available to the client no matter where the current directory is.
@@ -50,6 +64,9 @@ const sess = {
     db: sequelize
   })
 };
+
+
+
 
 // express middleware
 app.use(express.json());
