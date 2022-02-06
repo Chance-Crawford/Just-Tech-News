@@ -10,8 +10,13 @@ const apiRoutes = require('./api');
 
 const homeRoutes = require('./home-routes.js');
 
+const dashboardRoutes = require('./dashboard-routes.js');
+
 router.use('/api', apiRoutes);
+// all handlebar view routes related to the homepage are prefixed with nothing except /
 router.use('/', homeRoutes);
+// Now all dashboard handlebar views will be prefixed with /dashboard. In dashboard-routes.js
+router.use('/dashboard', dashboardRoutes);
 
 // This is so if we make a request to any endpoint that 
 // doesn't exist, we'll receive a 404 error indicating we have 

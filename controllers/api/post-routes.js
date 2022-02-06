@@ -148,7 +148,8 @@ router.post('/', (req, res) => {
       // current time.
       title: req.body.title,
       post_url: req.body.post_url,
-      user_id: req.body.user_id
+      // gets the user id of the user who is making the post from the session.
+      user_id: req.session.user_id
     })
     // sends back post row (object) that was created in the database
     .then(dbPostData => res.json(dbPostData))

@@ -26,6 +26,8 @@
         {{!-- Since logout won’t be an actual page that users can visit, 
         it should be a button, but we can still style it to look like a link. --}}
         {{#if loggedIn}}
+        {{!-- there should also be a link to go to the user dashboard. --}}
+        <a href="/dashboard">dashboard</a>
         <button id="logout" class="btn-no-style">logout</button>
         {{!-- if not logged in, show the login button, but also won't show
         the logout button, since it is an "else" helper --}}

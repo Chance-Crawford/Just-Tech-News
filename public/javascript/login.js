@@ -42,9 +42,9 @@ async function signupFormHandler(event) {
         // check the response status
         if (response.ok) {
             console.log('success');
-            // if user was created successfully, take them back to
-            // the homepage
-            document.location.replace('/');
+            // if user was created successfully, logs them in/creates a session,
+            // then take them to the user dashboard page.
+            document.location.replace('/dashboard');
         } else {
             // if not successful response sent back from database.
             // then alert an error.
@@ -76,7 +76,9 @@ async function loginFormHandler(event) {
   
       // if user login successfully authenticated. go back to the homepage.
       if (response.ok) {
-        document.location.replace('/');
+          // if user was logged in successfully, create a session
+          // and take them to the user dashboard page.
+          document.location.replace('/dashboard');
       } else {
         alert(response.statusText);
       }

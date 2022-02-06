@@ -1,0 +1,39 @@
+{{!-- see google docs, handlebars.js, Building a dashboard for logged in users --}}
+
+<section>
+  <h2>Create New Post</h2>
+
+  <form class="new-post-form">
+    <div>
+      <label for="post-title">Title</label>
+      <input type="text" id="post-title" name="post-title" />
+    </div>
+    <div>
+      <label for="post-url">Link</label>
+      <input id="post-url" name="post-url" />
+    </div>
+    <button type="submit" class="btn">Create</button>
+  </form>
+</section>
+
+{{!-- if user has created any posts --}}
+{{#if posts.length}}
+<section>
+  <h2>Your Posts</h2>
+  <ol>
+      {{!-- iterate over the posts array and create this html for each --}}
+    {{#each posts as |post|}}
+    <li>
+        {{!-- partial template imported --}}
+        {{!-- see google docs, handlebars.js, partial templates --}}
+      {{> post-info post}}
+      {{!-- give option to edit each post --}}
+      {{!-- the post id of each post gets put in the url of their "edit" button --}}
+      <a href="/dashboard/edit/{{post.id}}" class="edit-link">Edit post</a>
+    </li>
+    {{/each}}
+  </ol>
+</section>
+{{/if}}
+
+<script src="/javascript/add-post.js"></script>
